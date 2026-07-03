@@ -1,0 +1,27 @@
+syntax = "v1"
+
+info(
+    desc: "API 加解密演示（开发参考菜单）"
+    author: "ovra"
+)
+
+type (
+    EncryptDemoResp {
+        Plain   string `json:"plain"`
+        Message string `json:"message"`
+    }
+)
+
+@server(
+    tags: "加解密演示"
+    group: dev/encrypt
+    prefix: /test/api/encrypt
+    middleware: Auth, Sign
+)
+service System {
+    @handler Request
+    post /request returns (string)
+
+    @handler Response
+    get /response returns (EncryptDemoResp)
+}

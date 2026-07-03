@@ -1,0 +1,53 @@
+syntax = "v1"
+
+info(
+    desc: "产品实时数据列表（占位接口，待接业务表）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    ProductRealtimeQuery {
+        Keyword     string `form:"keyword,optional"`
+        ProductCode string `form:"productCode,optional"`
+        Type        string `form:"type,optional"`
+    }
+    PageSetProductRealtimeReq {
+        PageReq
+        ProductRealtimeQuery
+    }
+    ProductRealtimeItem {
+        Id            string `json:"id"`
+        ProductCode   string `json:"productCode"`
+        TradeCode     string `json:"tradeCode"`
+        Name          string `json:"name"`
+        Type          string `json:"type"`
+        CurrentPrice  string `json:"currentPrice"`
+        ChangeAmount  string `json:"changeAmount"`
+        ChangePercent string `json:"changePercent"`
+        OpenPrice     string `json:"openPrice"`
+        HighPrice     string `json:"highPrice"`
+        LowPrice      string `json:"lowPrice"`
+        Volume        string `json:"volume"`
+        Turnover      string `json:"turnover"`
+        Direction     string `json:"direction"`
+        TradeDate     string `json:"tradeDate"`
+        UpdateTime    string `json:"updateTime"`
+    }
+    PageSetProductRealtimeResp {
+        Rows  []*ProductRealtimeItem `json:"rows"`
+        Total int64                  `json:"total"`
+    }
+)
+
+@server(
+    tags: "产品管理"
+    group: product/realtime
+    prefix: /product/realtime
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetProductRealtimeReq) returns (PageSetProductRealtimeResp)
+}

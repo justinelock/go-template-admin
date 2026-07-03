@@ -1,0 +1,65 @@
+syntax = "v1"
+
+info(
+    desc: "账户流水（对接 fb_account_flow_records）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    // 列表筛选；对齐 Java FbAccountFlowRecordsDao.selectPageWithUser
+    FundStatementQuery {
+        Keyword  string `form:"keyword,optional"`  // 用户名/手机/姓名/业务单号模糊
+        Status   string `form:"status,optional"`   // f.status（Java 参数名 status）
+        Type     string `form:"type,optional"`     // f.flow_type（Java 参数名 type）
+        Currency string `form:"currency,optional"` // f.currency
+        UserId   string `form:"userId,optional"`   // f.user_id 精确
+        Username string `form:"username,optional"`  // u.username LIKE
+        Mobile   string `form:"mobile,optional"`   // u.mobile LIKE
+        RealName string `form:"realName,optional"` // u.real_name LIKE
+    }
+    PageSetFundStatementReq {
+        PageReq
+        FundStatementQuery
+    }
+    // 列表/详情行；主表 fb_account_flow_records，契约见 docs/biz-api.md 2.2
+    FundStatementItem {
+        Id           string  `json:"id"`
+        UserId       string  `json:"userId"`
+        Username     string  `json:"username,optional"`
+        Mobile       string  `json:"mobile,optional"`
+        RealName     string  `json:"realName,optional"`
+        AccountType  string  `json:"accountType,optional"`
+        FlowType     string  `json:"flowType,optional"`
+        BeforeAmount float64 `json:"beforeAmount,optional"`
+        FlowAmount   float64 `json:"flowAmount,optional"`
+        AfterAmount  float64 `json:"afterAmount,optional"`
+        BusinessNo   string  `json:"businessNo,optional"`
+        Remark       string  `json:"remark,optional"`
+        CreatedAt    string  `json:"createdAt,optional"`
+        WalletId     string  `json:"walletId,optional"`
+        Currency     string  `json:"currency,optional"`
+        Description  string  `json:"description,optional"`
+        Status       string  `json:"status,optional"`
+        UpdatedAt    string  `json:"updatedAt,optional"`
+    }
+    PageSetFundStatementResp {
+        Rows  []*FundStatementItem `json:"rows"`
+        Total int64                `json:"total"`
+    }
+)
+
+@server(
+    tags: "资金管理"
+    group: fund/statement
+    prefix: /fund/statement
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetFundStatementReq) returns (PageSetFundStatementResp)
+
+    @handler Detail
+    get /detail/:id (IdReq) returns (FundStatementItem)
+}

@@ -1,0 +1,75 @@
+syntax = "v1"
+
+info(
+    desc: "市场新闻（对接 fb_market_news）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    // 列表筛选；对齐 Java FbMarketNewsServiceImpl.getWrapper
+    NotifyNewsQuery {
+        Keyword    string `form:"keyword,optional"`    // title/summary 模糊
+        Source     string `form:"source,optional"`
+        Category   string `form:"category,optional"`
+        OrderField string `form:"orderField,optional"` // publish_time/created_at
+        Order      string `form:"order,optional"`      // asc/desc
+    }
+    PageSetNotifyNewsReq {
+        PageReq
+        NotifyNewsQuery
+    }
+    // 列表/详情行；字段对齐 fb_market_news（docs/biz-api.md 6.1）
+    NotifyNewsItem {
+        Id          string `json:"id"`
+        Title       string `json:"title,optional"`
+        Summary     string `json:"summary,optional"`
+        Content     string `json:"content,optional"`
+        Source      string `json:"source,optional"`
+        Category    string `json:"category,optional"`
+        Url         string `json:"url,optional"`
+        ImageUrl    string `json:"imageUrl,optional"`
+        ViewCount   int    `json:"viewCount,optional"`
+        PublishTime string `json:"publishTime,optional"`
+        CreatedAt   string `json:"createdAt,optional"`
+        UpdatedAt   string `json:"updatedAt,optional"`
+    }
+    PageSetNotifyNewsResp {
+        Rows  []*NotifyNewsItem `json:"rows"`
+        Total int64             `json:"total"`
+    }
+    // 新增/修改请求体；对齐 Java FbMarketNewsDTO
+    NotifyNewsSaveReq {
+        Id          string `json:"id,optional"`
+        Title       string `json:"title"`
+        Summary     string `json:"summary,optional"`
+        Content     string `json:"content,optional"`
+        Source      string `json:"source,optional"`
+        Category    string `json:"category,optional"`
+        Url         string `json:"url,optional"`
+        ImageUrl    string `json:"imageUrl,optional"`
+        ViewCount   int    `json:"viewCount,optional"`
+        PublishTime string `json:"publishTime,optional"`
+    }
+)
+
+@server(
+    tags: "通知管理"
+    group: notify/news
+    prefix: /notify/news
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetNotifyNewsReq) returns (PageSetNotifyNewsResp)
+
+    @handler Info
+    get /:id (IdReq) returns (NotifyNewsItem)
+
+    @handler Add
+    post / (NotifyNewsSaveReq)
+
+    @handler Update
+    put / (NotifyNewsSaveReq)
+}

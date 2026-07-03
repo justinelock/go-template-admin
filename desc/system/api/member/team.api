@@ -1,0 +1,134 @@
+syntax = "v1"
+
+info(
+    desc: "业务用户团队管理（对接 fb_users 团队树）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    // 团队列表/统计共用筛选；GET /stats 仅 keyword 有效（定位统计根用户），status 仅列表使用
+    MemberTeamQuery {
+        Keyword string `form:"keyword,optional"` // 用户名/手机号/身份证/姓名；stats 模糊 LIMIT 1
+        Status  string `form:"status,optional"`  // fb_users.status（仅 GET /list）
+    }
+    PageSetMemberTeamReq {
+        PageReq
+        MemberTeamQuery
+    }
+    // 上级代理；来自 parent_id 关联的 fb_users 行
+    MemberTeamAgent {
+        Id       string `json:"id"`
+        Username string `json:"username"`
+        RealName string `json:"realName,optional"`
+    }
+    // 团队树统计（data 内返回）；按 parent_id 树层级计数，契约见 docs/biz-api.md 1.7
+    MemberTeamStatsResp {
+        TotalMembers     int64   `json:"totalMembers"`
+        Level1Members    int64   `json:"level1Members"`    // 一级下级数（全局时为顶层用户数）
+        Level2Members    int64   `json:"level2Members"`
+        Level3Members    int64   `json:"level3Members"`
+        Level4Members    int64   `json:"level4Members"`
+        Level5Members    int64   `json:"level5Members"`
+        TotalTeamBalance float64 `json:"totalTeamBalance"` // 全库或根用户下级钱包余额总和
+    }
+    // 团队列表行；level1Members 为直属下级数，level2～5 待子树聚合增强
+    MemberTeamItem {
+        Id               string           `json:"id"`
+        Username         string           `json:"username,optional"`
+        Agent            *MemberTeamAgent `json:"agent,optional"`
+        RealName         string           `json:"realName,optional"`
+        Level            int64            `json:"level,optional"`
+        Status           string           `json:"status,optional"`
+        TeamSize         int64            `json:"teamSize,optional"`      // fb_users.team_size
+        Level1Members    int64            `json:"level1Members,optional"` // 直属下级数
+        Level2Members    int64            `json:"level2Members,optional"`
+        Level3Members    int64            `json:"level3Members,optional"`
+        Level4Members    int64            `json:"level4Members,optional"`
+        Level5Members    int64            `json:"level5Members,optional"`
+        AgentLevel       int64            `json:"agentLevel,optional"`
+        WalletCount      int64            `json:"walletCount,optional"`
+        Balance          float64          `json:"balance,optional"`          // 个人钱包余额
+        TotalTeamBalance float64          `json:"totalTeamBalance,optional"` // 下级团队余额（预留）
+        CreatedAt        string           `json:"createdAt,optional"`
+    }
+    PageSetMemberTeamResp {
+        Rows  []*MemberTeamItem `json:"rows"`
+        Total int64             `json:"total"`
+    }
+    // 团队详情弹窗；总资产=钱包余额汇总，充提对齐报表聚合
+    MemberTeamDetailResp {
+        Id             string  `json:"id"`
+        Username       string  `json:"username,optional"`
+        AgentLevel     int64   `json:"agentLevel,optional"`
+        WalletCount    int64   `json:"walletCount,optional"`
+        TotalAssets    float64 `json:"totalAssets,optional"`
+        TotalDeposit   float64 `json:"totalDeposit,optional"`
+        TotalWithdraw  float64 `json:"totalWithdraw,optional"`
+        CreatedAt      string  `json:"createdAt,optional"`
+    }
+    // 下级团队成员行；level 为相对选中用户的层级 1～5
+    MemberTeamMemberItem {
+        Level          int64   `json:"level,optional"`
+        Username       string  `json:"username,optional"`
+        TotalAssets    float64 `json:"totalAssets,optional"`
+        TotalDeposit   float64 `json:"totalDeposit,optional"`
+        TotalInvest    float64 `json:"totalInvest,optional"`
+        TotalWithdraw  float64 `json:"totalWithdraw,optional"`
+    }
+    PageSetMemberTeamMembersReq {
+        PageReq
+        UserId string `path:"userId"`
+    }
+    PageSetMemberTeamMembersResp {
+        Rows  []*MemberTeamMemberItem `json:"rows"`
+        Total int64                   `json:"total"`
+    }
+    MemberTeamChangeParentReq {
+        UserId   string `json:"userId"`   // 被操作用户 fb_users.id
+        Username string `json:"username"` // 新上级用户名（必填）；对齐 Java AgentChangeRequest
+    }
+    // 更换上级成功响应（data 内返回）
+    MemberTeamChangeParentResp {
+        UserId         string `json:"userId"`
+        ParentId       string `json:"parentId,optional"`
+        ParentUsername string `json:"parentUsername,optional"`
+    }
+    MemberTeamAgentLevelReq {
+        UserId     string `json:"userId"`              // fb_users.id，对齐 Java AgentLevelUpdateRequest
+        AgentLevel int64  `json:"agentLevel"`          // 最大展开层级 3/4/5
+    }
+    // 调整代理层级成功响应（data 内返回）
+    MemberTeamAgentLevelResp {
+        UserId     string `json:"userId"`
+        AgentLevel int64  `json:"agentLevel"`
+    }
+)
+
+@server(
+    tags: "业务用户"
+    group: member/team
+    prefix: /member/team
+    middleware: Auth, Sign
+)
+service System {
+    // 团队统计；仅 keyword 定位根用户，对齐 Java GET /fubang/fbteam/stats
+    @handler Stats
+    get /stats (MemberTeamQuery) returns (MemberTeamStatsResp)
+
+    @handler PageSet
+    get /list (PageSetMemberTeamReq) returns (PageSetMemberTeamResp)
+
+    @handler Info
+    get /:id (IdReq) returns (MemberTeamDetailResp)
+
+    @handler Members
+    get /members/:userId (PageSetMemberTeamMembersReq) returns (PageSetMemberTeamMembersResp)
+
+    @handler ChangeParent
+    put /changeParent (MemberTeamChangeParentReq) returns (MemberTeamChangeParentResp)
+
+    @handler AgentLevel
+    put /agentLevel (MemberTeamAgentLevelReq) returns (MemberTeamAgentLevelResp)
+}

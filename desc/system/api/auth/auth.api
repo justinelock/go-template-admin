@@ -1,0 +1,59 @@
+syntax = "v1"
+
+info(
+    desc: "后台登录、登出、验证码与租户列表（原 auth 服务，合并进 system）"
+    author: "ovra"
+)
+
+type LoginReq {
+	username  string `json:"username"`
+	password  string `json:"password"`
+	clientId  string `json:"clientId"`
+	tenantId  string `json:"tenantId"`
+	grantType string `json:"grantType"`
+	code      string `json:"code,optional"`
+	uuid      string `json:"uuid,optional"`
+}
+
+type (
+	LoginResp {
+		accessToken     string `json:"access_token"`
+		refreshToken    string `json:"refresh_token"`
+		clientId        string `json:"client_id"`
+		expireIn        int64  `json:"expire_in"`
+		refreshExpireIn int64  `json:"refresh_expire_in"`
+	}
+	CaptchaResp {
+		captchaEnabled bool   `json:"captchaEnabled"`
+		img            string `json:"img"`
+		uuid           string `json:"uuid"`
+	}
+	TenantResp {
+		tenantEnabled bool       `json:"tenantEnabled"`
+		voList        []TenantVo `json:"voList"`
+	}
+	TenantVo {
+		tenantId    string `json:"tenantId"`
+		companyName string `json:"companyName"`
+		domain      string `json:"domain"`
+	}
+)
+
+@server (
+	group:      auth
+	prefix:     /auth
+	middleware: Sign
+)
+service System {
+	@handler login
+	post /login (LoginReq) returns (LoginResp)
+
+	@handler logout
+	post /logout
+
+	@handler captcha
+	get /code returns (CaptchaResp)
+
+	@handler TenantList
+	get /tenant/list returns (TenantResp)
+}

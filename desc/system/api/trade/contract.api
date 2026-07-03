@@ -1,0 +1,117 @@
+syntax = "v1"
+
+info(
+    desc: "合约订单（对接 fb_crypto_contract_orders）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    // 列表筛选；对齐 Java FbContractOrdersServiceImpl.getWrapper
+    TradeContractQuery {
+        Keyword        string `form:"keyword,optional"`        // username/mobile/real_name/id_card 模糊 → user_id
+        Status         string `form:"status,optional"`          // o.status：1持仓 2取消 3已结算
+        ControlResult  string `form:"controlResult,optional"`   // control_result：1赢 2输
+        Type           string `form:"type,optional"`            // Java 列表未使用，保留兼容
+        Username       string `form:"username,optional"`
+        Mobile         string `form:"mobile,optional"`
+        RealName       string `form:"realName,optional"`
+    }
+    PageSetTradeContractReq {
+        PageReq
+        TradeContractQuery
+    }
+    // 列表行；契约见 docs/biz-api.md 3.1（对齐 FbContractOrdersVO）
+    TradeContractItem {
+        Id                         string  `json:"id"`
+        UserId                     string  `json:"userId"`
+        Username                   string  `json:"username,optional"`
+        Mobile                     string  `json:"mobile,optional"`
+        RealName                   string  `json:"realName,optional"`
+        Account                    string  `json:"account,optional"`
+        CoinType                   string  `json:"coinType,optional"`
+        Market                     string  `json:"market,optional"`
+        Direction                  int     `json:"direction,optional"`
+        TradePair                  string  `json:"tradePair,optional"`
+        PairName                   string  `json:"pairName,optional"`
+        ProductName                string  `json:"productName,optional"`
+        Amount                     float64 `json:"amount,optional"`
+        ProfitRatio                float64 `json:"profitRatio,optional"`
+        Seconds                    int     `json:"seconds,optional"`
+        OpeningPrice               float64 `json:"openingPrice,optional"`
+        ClosingPrice               float64 `json:"closingPrice,optional"`
+        OpeningTime                string  `json:"openingTime,optional"`
+        ClosingTime                string  `json:"closingTime,optional"`
+        Balance                    float64 `json:"balance,optional"`
+        WalletBalanceAfterSettle   float64 `json:"walletBalanceAfterSettle,optional"`
+        ExpectedProfit             float64 `json:"expectedProfit,optional"`
+        ActualProfit               float64 `json:"actualProfit,optional"`
+        Status                     int     `json:"status,optional"`
+        ControlType                int     `json:"controlType,optional"`
+        ControlResult              int     `json:"controlResult,optional"`
+        Remark                     string  `json:"remark,optional"`
+        CreateTime                 string  `json:"createTime,optional"`
+        UpdateTime                 string  `json:"updateTime,optional"`
+        Version                    int     `json:"version,optional"`
+        UserControl                int     `json:"userControl,optional"`
+        GlobalControlStateSnapshot string  `json:"globalControlStateSnapshot,optional"`
+        GlobalControlApplied       int     `json:"globalControlApplied,optional"`
+        HasBoughtFund              int     `json:"hasBoughtFund,optional"`
+    }
+    PageSetTradeContractResp {
+        Rows  []*TradeContractItem `json:"rows"`
+        Total int64                `json:"total"`
+    }
+    // 修改交易方向 path 参数
+    TradeContractDirectionReq {
+        Id        string `path:"id"`
+        Direction int    `path:"direction"`
+    }
+    // 本页四态批量控单；筛选与列表一致（不含 controlResult）
+    TradeContractBatchDirectionalReq {
+        PageNum      int64  `json:"pageNum,optional"`
+        PageSize     int64  `json:"pageSize,optional"`
+        Keyword      string `json:"keyword,optional"`
+        Status       string `json:"status,optional"`
+        BeginTime    string `json:"beginTime,optional"`
+        EndTime      string `json:"endTime,optional"`
+        ControlState string `json:"controlState"`
+    }
+    TradeContractBatchDirectionalResp {
+        AffectedCount int `json:"affectedCount"`
+    }
+    // 结算日志详情（对齐 Java GET /fubang/fbcontractordersdetail/{orderId}）
+    TradeContractSettlementDetailResp {
+        Id      string `json:"id"`
+        OrderId string `json:"orderId"`
+        UserId  string `json:"userId"`
+        Detail  string `json:"detail"`
+    }
+)
+
+@server(
+    tags: "订单管理"
+    group: trade/contract
+    prefix: /trade/contract
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetTradeContractReq) returns (PageSetTradeContractResp)
+
+    @handler Win
+    put /win/:id (IdReq)
+
+    @handler Lose
+    put /lose/:id (IdReq)
+
+    @handler Direction
+    put /direction/:id/:direction (TradeContractDirectionReq)
+
+    @handler BatchCurrentPageDirectional
+    put /control/batch-current-page/directional (TradeContractBatchDirectionalReq) returns (TradeContractBatchDirectionalResp)
+
+    @handler SettlementDetail
+    get /detail/:id (IdReq) returns (TradeContractSettlementDetailResp)
+}

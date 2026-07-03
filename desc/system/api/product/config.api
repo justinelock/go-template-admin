@@ -1,0 +1,96 @@
+syntax = "v1"
+
+info(
+    desc: "产品配置（对接 fb_fund_product）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    // 列表筛选；对齐 Java FbFundProductServiceImpl.getWrapper
+    ProductConfigQuery {
+        Keyword    string `form:"keyword,optional"`    // code/name 模糊
+        Code       string `form:"code,optional"`
+        Name       string `form:"name,optional"`
+        Type       string `form:"type,optional"`       // STOCK/FOREX/FUND 等
+        Status     string `form:"status,optional"`    // 0 禁用 / 1 启用
+        OrderField string `form:"orderField,optional"` // sort/create_time/code
+        Order      string `form:"order,optional"`      // asc/desc
+    }
+    PageSetProductConfigReq {
+        PageReq
+        ProductConfigQuery
+    }
+    // 列表/详情行；字段对齐 fb_fund_product（docs/biz-api.md 5.1）
+    ProductConfigItem {
+        Id                string  `json:"id"`
+        Code              string  `json:"code,optional"`
+        Alias             string  `json:"alias,optional"`
+        TradePair         string  `json:"tradePair,optional"`
+        Name              string  `json:"name,optional"`
+        Type              string  `json:"type,optional"`
+        Market            string  `json:"market,optional"`
+        TradingHours      string  `json:"tradingHours,optional"`
+        Description       string  `json:"description,optional"`
+        Status            int     `json:"status,optional"`
+        DividendRatio     float64 `json:"dividendRatio,optional"`
+        Currency          string  `json:"currency,optional"`
+        Period            int     `json:"period,optional"`
+        TotalDividendRate float64 `json:"totalDividendRate,optional"`
+        DailyDividendRate float64 `json:"dailyDividendRate,optional"`
+        DividendEndDate   string  `json:"dividendEndDate,optional"`
+        DividendStrDate   string  `json:"dividendStrDate,optional"`
+        IsLocked          int     `json:"isLocked,optional"`
+        LimitBuyCount     int     `json:"limitBuyCount,optional"`
+        LimitSellDays     int     `json:"limitSellDays,optional"`
+        LimitBuyAmount    int     `json:"limitBuyAmount,optional"`
+        Sort              int     `json:"sort,optional"`
+        Odds              float64 `json:"odds,optional"`
+        CreateTime        string  `json:"createTime,optional"`
+        UpdateTime        string  `json:"updateTime,optional"`
+    }
+    PageSetProductConfigResp {
+        Rows  []*ProductConfigItem `json:"rows"`
+        Total int64                `json:"total"`
+    }
+    // 新增/修改请求体；对齐 Java FbFundProductDTO（弹窗字段子集）
+    ProductConfigSaveReq {
+        Id           string  `json:"id,optional"`
+        Code         string  `json:"code"`
+        Alias        string  `json:"alias,optional"`
+        TradePair    string  `json:"tradePair,optional"`
+        Name         string  `json:"name"`
+        Type         string  `json:"type"`
+        Market       string  `json:"market"`
+        TradingHours string  `json:"tradingHours,optional"`
+        Description  string  `json:"description,optional"`
+        Status       int     `json:"status"`
+        Currency     string  `json:"currency"`
+        Odds         float64 `json:"odds"`
+        Sort         int     `json:"sort,optional"`
+    }
+)
+
+@server(
+    tags: "产品管理"
+    group: product/config
+    prefix: /product/config
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetProductConfigReq) returns (PageSetProductConfigResp)
+
+    @handler Info
+    get /:id (IdReq) returns (ProductConfigItem)
+
+    @handler Add
+    post / (ProductConfigSaveReq)
+
+    @handler Update
+    put / (ProductConfigSaveReq)
+
+    @handler Delete
+    delete /:ids (IdsReq)
+}

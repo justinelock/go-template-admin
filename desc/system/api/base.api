@@ -1,0 +1,303 @@
+syntax = "v1"
+
+type (
+    PageReq {
+        PageNum  int64  `form:"pageNum,default=1"`
+        PageSize int64  `form:"pageSize,default=20"`
+        TimeReq
+    }
+    IdReq {
+        Id string `path:"id"`
+    }
+    CodeReq {
+        Code string `path:"code"`
+    }
+    IdsReq {
+        Ids string `path:"ids"`
+    }
+    TimeReq {
+        BeginTime string `form:"params[beginTime],optional"`
+        EndTime   string `form:"params[endTime],optional"`
+    }
+)
+
+type (
+    UserBase {
+        UserID      string `json:"userId,optional"`
+        TenantID    string `json:"tenantId,optional"`
+        DeptID      string `json:"deptId,optional"`
+        UserName    string `json:"username"`
+        NickName    string `json:"nickName"`
+        UserType    string `json:"userType,optional"`
+        Email       string `json:"email,optional"`
+        PhoneNumber string `json:"phonenumber,optional"`
+        Sex         string `json:"sex,optional"`
+        Avatar      string `json:"avatar,optional"`
+        Password    string `json:"password,optional"`
+        Status      string `json:"status,optional"`
+        LoginIp     string `json:"loginIp,optional"`
+        LoginDate   string `json:"loginDate,optional"`
+        Remark      string `json:"remark,optional"`
+    }
+    UserRoleBase {
+        UserID string `json:"userId"`
+        RoleID string `json:"roleId"`
+    }
+    RoleBase {
+        RoleID            string `json:"roleId,optional"`
+        TenantID          string `json:"tenantId,optional"`
+        RoleName          string `json:"roleName"`
+        RoleKey           string `json:"roleKey"`
+        RoleSort          int32  `json:"roleSort"`
+        DataScope         string `json:"dataScope,optional"`
+        MenuCheckStrictly bool   `json:"menuCheckStrictly,optional"`
+        DeptCheckStrictly bool   `json:"deptCheckStrictly,optional"`
+        Status            string `json:"status,default=0,optional"`
+        Remark            string `json:"remark,optional"`
+        CreateTime        string `json:"createTime,optional"`
+        SuperAdmin        bool   `json:"superAdmin,omitempty,optional"`
+    }
+    UserPostBase {
+        UserID string `json:"userId"`
+        PostID string `json:"postId"`
+    }
+    PostBase {
+        PostID      string `json:"postId,optional"`
+        TenantID    string `json:"tenantId,optional"`
+        DeptID      string `json:"deptId"`
+        PostCode    string `json:"postCode"`
+        PostCategory string `json:"postCategory,optional"`
+        PostName    string `json:"postName"`
+        PostSort    int32  `json:"postSort"`
+        Status      string `json:"status,default=0"`
+        Remark      string `json:"remark,optional"`
+        CreateTime  string `json:"createTime,optional"`
+    }
+    RoleMenuBase {
+        RoleID string `json:"roleId"`
+        MenuID string `json:"menuId"`
+    }
+    MenuBase {
+        MenuID     string `json:"menuId,optional"`
+        MenuName   string `json:"menuName"`
+        ParentID   string `json:"parentId,optional"`
+        OrderNum   int32  `json:"orderNum,optional"`
+        Path       string `json:"path,optional"`
+        Component  string `json:"component,optional"`
+        QueryParam string `json:"queryParam,optional"`
+        IsFrame    string `json:"isFrame,optional"`
+        IsCache    string `json:"isCache,optional"`
+        MenuType   string `json:"menuType,optional"`
+        Visible    string `json:"visible,optional"`
+        Status     string `json:"status,optional"`
+        Perms      string `json:"perms,optional"`
+        Icon       string `json:"icon,optional"`
+        Remark     string `json:"remark,optional"`
+        CreateTime string `json:"createTime,optional"`
+    }
+    RoleDeptBase {
+        RoleID string `json:"roleId"`
+        DeptID string `json:"deptId"`
+    }
+    DeptBase {
+        DeptID      string  `json:"deptId,optional"`
+        TenantID    string  `json:"tenantId,optional"`
+        ParentID    string  `json:"parentId,optional"`
+        Ancestors   string  `json:"ancestors,optional"`
+        DeptName    string  `json:"deptName,optional"`
+        DeptCategory string `json:"deptCategory,optional"`
+        OrderNum    int32   `json:"orderNum,optional"`
+        Leader      *string `json:"leader,optional"`
+        Phone       string  `json:"phone,optional"`
+        Email       string  `json:"email,optional"`
+        Status      string  `json:"status,optional"`
+        CreateTime  string  `json:"createTime,optional"`
+        Children    []*DeptBase `json:"children,optional,omitempty"`
+    }
+    DictDataBase {
+        DictCode   string `json:"dictCode,optional"`
+        TenantId   string `json:"tenantId,optional"`
+        DictSort   int32  `json:"dictSort,optional"`
+        DictLabel  string `json:"dictLabel,optional"`
+        DictValue  string `json:"dictValue,optional"`
+        DictType   string `json:"dictType,optional"`
+        CssClass   string `json:"cssClass,optional"`
+        ListClass  string `json:"listClass,optional"`
+        IsDefault  string `json:"isDefault,optional"`
+        CreateTime string `json:"createTime,optional"`
+        Remark     string `json:"remark,optional"`
+    }
+    DictTypeBase {
+        DictID     string `json:"dictId,optional"`
+        TenantID   string `json:"tenantId,optional"`
+        DictName   string `json:"dictName,optional"`
+        DictType   string `json:"dictType,optional"`
+        CreateTime string `json:"createTime,optional"`
+        Remark     string `json:"remark,optional"`
+    }
+    ConfigBase {
+        ConfigID    string `json:"configId,optional"`
+        TenantID    string `json:"tenantId,optional"`
+        ConfigName  string `json:"configName,optional"`
+        ConfigKey   string `json:"configKey,optional"`
+        ConfigValue string `json:"configValue,optional"`
+        ConfigType  string `json:"configType,optional"`
+        Remark      string `json:"remark,optional"`
+        CreateTime  string `json:"createTime,optional"`
+    }
+    NoticeBase {
+        NoticeID      string `json:"noticeId,optional"`
+        TenantID      string `json:"tenantId,optional"`
+        NoticeTitle   string `json:"noticeTitle"`
+        NoticeType    string `json:"noticeType"`
+        NoticeContent string `json:"noticeContent,optional"`
+        Status        string `json:"status,optional"`
+        Remark        string `json:"remark,optional"`
+        CreateTime string `json:"createTime,optional,omitempty"`
+        CreateByName string `json:"createByName,optional,omitempty"`
+    }
+    TenantBase {
+        ID            string `json:"id,optional"`
+        TenantID      string `json:"tenantId,optional"`
+        ContactUsername string `json:"contactUsername,optional"`
+        ContactPhone  string `json:"contactPhone,optional"`
+        CompanyName   string `json:"companyName,optional"`
+        LicenseNumber string `json:"licenseNumber,optional"`
+        Address       string `json:"address,optional"`
+        Intro         string `json:"intro,optional"`
+        Domain        string `json:"domain,optional"`
+        Remark        string `json:"remark,optional"`
+        PackageId     string `json:"packageId,optional"`
+        ExpireTime    string `json:"expireTime,optional"`
+        AccountCount  int32  `json:"accountCount,optional"`
+        Status        string `json:"status,optional"`
+    }
+    TenantPackageBase {
+        PackageID          string `json:"packageId,optional"`
+        PackageName        string `json:"packageName,optional"`
+        MenuIds            string `json:"menuIds,optional"`
+        Remark             string `json:"remark,optional"`
+        MenuCheckStrictly  bool  `json:"menuCheckStrictly,optional"`
+        Status             string `json:"status,optional"`
+    }
+    ClientBase {
+        ID           string `json:"id,optional"`
+        ClientID     string `json:"clientId,optional"`
+        ClientKey    string `json:"clientKey,optional"`
+        ClientSecret string `json:"clientSecret,optional"`
+        GrantType    string `json:"grantType,optional"`
+        GrantTypeList []string `json:"grantTypeList,optional"`
+        DeviceType   string `json:"deviceType,optional"`
+        ActiveTimeout int32 `json:"activeTimeout,optional"`
+        Timeout       int32 `json:"timeout,optional"`
+        Status        string `json:"status,optional"`
+    }
+    SocialBase {
+        ID              string `json:"id,optional"`
+        UserID          string `json:"userId"`
+        TenantID        string `json:"tenantId,optional"`
+        AuthID          string `json:"authId"`
+        Source          string `json:"source"`
+        OpenID          string `json:"openId,optional"`
+        UserName        string `json:"username"`
+        NickName        string `json:"nickName,optional"`
+        Email           string `json:"email,optional"`
+        Avatar          string `json:"avatar,optional"`
+        AccessToken     string `json:"accessToken"`
+        ExpireIn        int32  `json:"expireIn,optional"`
+        RefreshToken    string `json:"refreshToken,optional"`
+        AccessCode      string `json:"accessCode,optional"`
+        UnionId         string `json:"unionId,optional"`
+        Scope           string `json:"scope,optional"`
+        TokenType       string `json:"tokenType,optional"`
+        IdToken         string `json:"idToken,optional"`
+        MacAlgorithm    string `json:"macAlgorithm,optional"`
+        MacKey          string `json:"macKey,optional"`
+        Code            string `json:"code,optional"`
+        OauthToken      string `json:"oauthToken,optional"`
+        OauthTokenSecret string `json:"oauthTokenSecret,optional"`
+    }
+    DeptTree {
+        Disabled bool   `json:"disabled"`
+        Id       string `json:"id"`
+        Label    string `json:"label"`
+        ParentId string `json:"parentId"`
+        Weight   int64  `json:"weight"`
+        Children []DeptTree `json:"children"`
+    }
+
+    LogininforBase {
+        InfoId string `json:"infoId,optional"`               // 访问ID
+        TenantId string `json:"tenantId,optional"`           // 租户编号
+        UserName string `json:"username,optional"`           // 用户账号
+        ClientKey string `json:"clientKey,optional"`         // 客户端
+        DeviceType string `json:"deviceType,optional"`       // 设备类型
+        Ipaddr string `json:"ipaddr,optional"`               // 登录IP地址
+        LoginLocation string `json:"loginLocation,optional"` // 登录地点
+        Browser string `json:"browser,optional"`             // 浏览器类型
+        Os string `json:"os,optional"`                       // 操作系统
+        Status string `json:"status,optional"`               // 登录状态（0成功 1失败）
+        Msg string `json:"msg,optional"`                     // 提示消息
+        LoginTime string `json:"loginTime,optional"`         // 访问时间
+    }
+
+    OperLogBase {
+        OperId string `json:"operId,optional"`               // 日志主键
+        TenantId string `json:"tenantId,optional"`           // 租户编号
+        Title string `json:"title,optional"`                 // 模块标题
+        BusinessType int32 `json:"businessType,optional"`    // 业务类型（0其它 1新增 2修改 3删除）
+        Method string `json:"method,optional"`               // 方法名称
+        RequestMethod string `json:"requestMethod,optional"` // 请求方式
+        OperatorType int32 `json:"operatorType,optional"`    // 操作类别（0其它 1后台用户 2手机端用户）
+        OperName string `json:"operName,optional"`           // 操作人员
+        DeptName string `json:"deptName,optional"`           // 部门名称
+        OperUrl string `json:"operUrl,optional"`             // 请求URL
+        OperIp string `json:"operIp,optional"`               // 主机地址
+        OperLocation string `json:"operLocation,optional"`   // 操作地点
+        OperParam string `json:"operParam,optional"`         // 请求参数
+        JsonResult string `json:"jsonResult,optional"`       // 返回参数
+        Status int32 `json:"status,optional"`                // 操作状态（0正常 1异常）
+        ErrorMsg string `json:"errorMsg,optional"`           // 错误消息
+        OperTime string `json:"operTime,optional"`           // 操作时间
+        CostTime int64 `json:"costTime,optional"`            // 消耗时间
+    }
+
+    OssBase {
+        OssId string `json:"ossId,optional"`               // 对象存储主键
+        TenantId string `json:"tenantId,optional"`         // 租户编号
+        FileName string `json:"fileName,optional"`         // 文件名
+        OriginalName string `json:"originalName,optional"` // 原名
+        FileSuffix string `json:"fileSuffix,optional"`     // 文件后缀名
+        Url string `json:"url,optional"`                   // URL地址
+        Ext1 string `json:"ext1,optional"`                 // 扩展字段
+        CreateDept int64 `json:"createDept,optional"`      // 创建部门
+        CreateTime string `json:"createTime,optional"`     // 创建时间
+        CreateBy int64 `json:"createBy,optional"`          // 上传人
+        UpdateTime string `json:"updateTime,optional"`     // 更新时间
+        UpdateBy int64 `json:"updateBy,optional"`          // 更新人
+        Service string `json:"service,optional"`           // 服务商
+    }
+
+    OssConfigBase {
+        OssConfigID string `json:"ossConfigId,optional"`   // 主键
+        TenantId string `json:"tenantId,optional"`         // 租户编号
+        ConfigKey string `json:"configKey,optional"`       // 配置key
+        AccessKey string `json:"accessKey,optional"`       // accessKey
+        SecretKey string `json:"secretKey,optional"`       // 秘钥
+        BucketName string `json:"bucketName,optional"`     // 桶名称
+        Prefix string `json:"prefix,optional"`             // 前缀
+        Endpoint string `json:"endpoint,optional"`         // 访问站点
+        Domain string `json:"domain,optional"`             // 自定义域名
+        IsHTTPS string `json:"isHttps,optional"`           // 是否https（Y=是,N=否）
+        Region string `json:"region,optional"`             // 域
+        AccessPolicy string `json:"accessPolicy,optional"` // 桶权限类型(0=private 1=public 2=custom)
+        Status string `json:"status,optional"`             // 是否默认（0=是,1=否）
+        Ext1 string `json:"ext1,optional"`                 // 扩展字段
+        CreateDept int64 `json:"createDept,optional"`      // 创建部门
+        CreateBy int64 `json:"createBy,optional"`          // 创建者
+        CreateTime string `json:"createTime,optional"`     // 创建时间
+        UpdateBy int64 `json:"updateBy,optional"`          // 更新者
+        UpdateTime string `json:"updateTime,optional"`     // 更新时间
+        Remark string `json:"remark,optional"`             // 备注
+    }
+)

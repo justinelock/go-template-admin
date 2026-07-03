@@ -1,0 +1,48 @@
+syntax = "v1"
+
+info(
+    desc: "成交订单列表（占位接口，待接业务表）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    TradeDealQuery {
+        Keyword    string `form:"keyword,optional"`
+        MarketCode string `form:"marketCode,optional"`
+        DealType   string `form:"dealType,optional"`
+    }
+    PageSetTradeDealReq {
+        PageReq
+        TradeDealQuery
+    }
+    TradeDealItem {
+        Id         string `json:"id"`
+        DealNo     string `json:"dealNo"`
+        UserName   string `json:"username"`
+        MarketCode string `json:"marketCode"`
+        StockCode  string `json:"stockCode"`
+        DealType   string `json:"dealType"`
+        DealPrice  string `json:"dealPrice"`
+        DealQty    string `json:"dealQty"`
+        DealAmount string `json:"dealAmount"`
+        Fee        string `json:"fee"`
+        DealTime   string `json:"dealTime"`
+    }
+    PageSetTradeDealResp {
+        Rows  []*TradeDealItem `json:"rows"`
+        Total int64            `json:"total"`
+    }
+)
+
+@server(
+    tags: "订单管理"
+    group: trade/deal
+    prefix: /trade/deal
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetTradeDealReq) returns (PageSetTradeDealResp)
+}

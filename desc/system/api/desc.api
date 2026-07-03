@@ -1,0 +1,66 @@
+syntax = "v1"
+
+info (
+	desc:   "系统管理"
+	author: "atlas"
+	email:  "ut1221@icloud.com"
+)
+
+import "system/user.api"
+import "system/role.api"
+import "system/dept.api"
+import "system/menu.api"
+import "system/post.api"
+import "system/notice.api"
+import "system/client.api"
+import "system/tenant.api"
+import "system/tenant_package.api"
+import "system/config.api"
+import "system/dict/data.api"
+import "system/dict/type.api"
+import "resource/oss.api"
+import "resource/oss_config.api"
+import "monitor/online.api"
+import "monitor/oper_log.api"
+import "monitor/logininfor.api"
+import "monitor/monitor.api"
+import "dev/sse.api"
+import "dev/encrypt.api"
+import "member/user.api"
+import "member/kyc.api"
+import "member/wallet.api"
+import "member/report.api"
+import "member/team.api"
+import "member/login_log.api"
+import "fund/wallet_apply.api"
+import "fund/statement.api"
+import "fund/withdraw.api"
+import "fund/recharge.api"
+import "trade/contract.api"
+import "trade/entrust.api"
+import "trade/deal.api"
+import "invest/position.api"
+import "invest/list.api"
+import "product/config.api"
+import "product/realtime.api"
+import "product/history.api"
+import "notify/news.api"
+import "notify/publish.api"
+import "kline/main.api"
+import "app/brand.api"
+import "app/version.api"
+import "app/release_upload.api"
+import "dashboard/dashboard.api"
+import "auth/auth.api"
+
+type HealthResp {
+	Status string `json:"status"`
+}
+
+@server (
+	group: health
+)
+service System {
+	@handler Health
+	get /health returns (HealthResp)
+}

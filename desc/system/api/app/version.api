@@ -1,0 +1,46 @@
+syntax = "v1"
+
+info(
+    desc: "App 发布版本（对接 app_release_versions）"
+    author: "ovra"
+)
+
+type (
+    AppReleaseVersionItem {
+        Id          string `json:"id,optional"`
+        Version     string `json:"version,optional"`
+        Description string `json:"description,optional"`
+        DownloadUrl string `json:"downloadUrl,optional"`
+        ApkFileUrl  string `json:"apkFileUrl,optional"`
+        IosUrl      string `json:"iosUrl,optional"`
+        IpaFileUrl  string `json:"ipaFileUrl,optional"`
+        IsForce     bool   `json:"isForce,optional"`
+        IsHotUpdate bool   `json:"isHotUpdate,optional"`
+        UpdatedAt   string `json:"updatedAt,optional"`
+    }
+    AppReleaseVersionSaveReq {
+        Id          string `json:"id,optional"`
+        Version     string `json:"version"`
+        Description string `json:"description"`
+        DownloadUrl string `json:"downloadUrl"`
+        ApkFileUrl  string `json:"apkFileUrl,optional"`
+        IosUrl      string `json:"iosUrl,optional"`
+        IpaFileUrl  string `json:"ipaFileUrl,optional"`
+        IsForce     bool   `json:"isForce,optional"`
+        IsHotUpdate bool   `json:"isHotUpdate,optional"`
+    }
+)
+
+@server(
+    tags: "App管理"
+    group: app/version
+    prefix: /app/version
+    middleware: Auth, Sign
+)
+service System {
+    @handler Active
+    get /active returns (AppReleaseVersionItem)
+
+    @handler Update
+    put / (AppReleaseVersionSaveReq)
+}

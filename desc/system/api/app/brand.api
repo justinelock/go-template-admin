@@ -1,0 +1,48 @@
+syntax = "v1"
+
+info(
+    desc: "App 品牌展示资源（对接 app_branding_config）"
+    author: "ovra"
+)
+
+type (
+    AppBrandingItem {
+        Id                   string `json:"id,optional"`
+        Revision             string `json:"revision,optional"`
+        SplashUrl            string `json:"splashUrl,optional"`
+        SplashEnabled        bool   `json:"splashEnabled,optional"`
+        HomeBannerUrl        string `json:"homeBannerUrl,optional"`
+        HomeBannerEnabled    bool   `json:"homeBannerEnabled,optional"`
+        ProfilePosterUrl     string `json:"profilePosterUrl,optional"`
+        ProfilePosterEnabled bool   `json:"profilePosterEnabled,optional"`
+        UpdatedAt            string `json:"updatedAt,optional"`
+        UpdatedBy            string `json:"updatedBy,optional"`
+    }
+    AppBrandingSaveReq {
+        Id                   string `json:"id,optional"`
+        SplashUrl            string `json:"splashUrl,optional"`
+        SplashEnabled        bool   `json:"splashEnabled,optional"`
+        HomeBannerUrl        string `json:"homeBannerUrl,optional"`
+        HomeBannerEnabled    bool   `json:"homeBannerEnabled,optional"`
+        ProfilePosterUrl     string `json:"profilePosterUrl,optional"`
+        ProfilePosterEnabled bool   `json:"profilePosterEnabled,optional"`
+    }
+    AppBrandingUploadResp {
+        Url string `json:"url"`
+        Src string `json:"src"`
+    }
+)
+
+@server(
+    tags: "App管理"
+    group: app/brand
+    prefix: /app/brand
+    middleware: Auth, Sign
+)
+service System {
+    @handler Active
+    get /active returns (AppBrandingItem)
+
+    @handler Save
+    put / (AppBrandingSaveReq) returns (AppBrandingItem)
+}

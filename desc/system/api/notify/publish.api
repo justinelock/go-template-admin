@@ -1,0 +1,46 @@
+syntax = "v1"
+
+info(
+    desc: "通知发布列表（占位接口，待接业务表）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    NotifyPublishQuery {
+        Keyword    string `form:"keyword,optional"`
+        NotifyType string `form:"notifyType,optional"`
+        ReadStatus string `form:"readStatus,optional"`
+    }
+    PageSetNotifyPublishReq {
+        PageReq
+        NotifyPublishQuery
+    }
+    NotifyPublishItem {
+        Id            string `json:"id"`
+        ReceiveUserId string `json:"receiveUserId"`
+        Title         string `json:"title"`
+        Content       string `json:"content"`
+        NotifyType    string `json:"notifyType"`
+        ReadStatus    string `json:"readStatus"`
+        Deleted       string `json:"deleted"`
+        SendTime      string `json:"sendTime"`
+        ExpireTime    string `json:"expireTime"`
+    }
+    PageSetNotifyPublishResp {
+        Rows  []*NotifyPublishItem `json:"rows"`
+        Total int64                `json:"total"`
+    }
+)
+
+@server(
+    tags: "通知管理"
+    group: notify/publish
+    prefix: /notify/publish
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetNotifyPublishReq) returns (PageSetNotifyPublishResp)
+}

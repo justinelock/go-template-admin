@@ -1,0 +1,77 @@
+config:
+  name: ovra-zero-config
+  mountPath: /app/etc/config
+
+image:
+  repository: ovra-zero
+  tag: latest
+  pullPolicy: IfNotPresent
+
+mysql:
+  name: mysql
+  port: 3306
+  external:
+    enabled: false
+    endpointSliceName: mysql-external
+    ip: ""
+  internal:
+    enabled: true
+    image: mysql:8.4
+    imagePullPolicy: IfNotPresent
+    rootPassword: Pl@1221view
+    database: ovra_zero
+    initSqlConfigMap: ""
+
+redis:
+  name: redis
+  enabled: true
+  image: redis:7-alpine
+  imagePullPolicy: IfNotPresent
+  password: Pl@1221view
+  port: 6379
+  busPort: 16379
+  headlessServiceName: redis-headless
+  cluster:
+    enabled: true
+    replicas: 3
+    replicasPerMaster: 0
+    nodeTimeout: 5000
+
+services:
+  system:
+    enabled: true
+    replicas: 1
+    command: /app/app-system
+    configFile: /app/etc/config/system.yaml
+    ports:
+      http: 8086
+    readinessPort: 8086
+  demo:
+    enabled: true
+    replicas: 1
+    command: /app/app-demo
+    configFile: /app/etc/config/demo.yaml
+    ports:
+      http: 8099
+    readinessPort: 8099
+
+ingress:
+  enabled: true
+  className: ""
+  host: ovra-zero.example.com
+  paths:
+    - path: /auth
+      service: system
+      port: 8086
+    - path: /system
+      service: system
+      port: 8086
+    - path: /monitor
+      service: system
+      port: 8086
+    - path: /resource
+      service: system
+      port: 8086
+    - path: /demo
+      service: demo
+      port: 8099

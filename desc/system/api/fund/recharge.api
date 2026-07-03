@@ -1,0 +1,70 @@
+syntax = "v1"
+
+info(
+    desc: "充值管理（对接 fb_deposits）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    // 列表筛选；对齐 Java FbDepositsDao.selectPageWithUser
+    FundRechargeQuery {
+        Keyword  string `form:"keyword,optional"`  // 用户名/手机/姓名/订单号模糊
+        Status   string `form:"status,optional"`   // d.status
+        Username string `form:"username,optional"` // u.username LIKE
+        Mobile   string `form:"mobile,optional"`   // u.mobile LIKE
+        RealName string `form:"realName,optional"` // u.real_name LIKE
+    }
+    PageSetFundRechargeReq {
+        PageReq
+        FundRechargeQuery
+    }
+    // 列表行；契约见 docs/biz-api.md 2.4
+    FundRechargeItem {
+        Id            string  `json:"id"`
+        UserId        string  `json:"userId"`
+        Username      string  `json:"username,optional"`
+        Mobile        string  `json:"mobile,optional"`
+        RealName      string  `json:"realName,optional"`
+        OrderNo       string  `json:"orderNo,optional"`
+        Amount        float64 `json:"amount,optional"`
+        Status        string  `json:"status,optional"`
+        PaymentMethod string  `json:"paymentMethod,optional"`
+        PaymentStatus string  `json:"paymentStatus,optional"`
+        PaymentNo     string  `json:"paymentNo,optional"`
+        PaymentTime   string  `json:"paymentTime,optional"`
+        Remark        string  `json:"remark,optional"`
+        Currency      string  `json:"currency,optional"`
+        TargetAccount string  `json:"targetAccount,optional"`
+        Screenshot    string  `json:"screenshot,optional"`
+        CreatedAt     string  `json:"createdAt,optional"`
+        UpdatedAt     string  `json:"updatedAt,optional"`
+    }
+    PageSetFundRechargeResp {
+        Rows  []*FundRechargeItem `json:"rows"`
+        Total int64                `json:"total"`
+    }
+    // 拒绝充值；对齐 Java PUT /rejected，remark 为拒绝理由
+    FundRechargeRejectReq {
+        Id     string `json:"id"`
+        Remark string `json:"remark"`
+    }
+)
+
+@server(
+    tags: "资金管理"
+    group: fund/recharge
+    prefix: /fund/recharge
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetFundRechargeReq) returns (PageSetFundRechargeResp)
+
+    @handler Approved
+    put /approved/:id (IdReq)
+
+    @handler Rejected
+    put /rejected (FundRechargeRejectReq)
+}

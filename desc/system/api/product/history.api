@@ -1,0 +1,52 @@
+syntax = "v1"
+
+info(
+    desc: "产品历史数据列表（占位接口，待接业务表）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    ProductHistoryQuery {
+        Keyword     string `form:"keyword,optional"`
+        ProductCode string `form:"productCode,optional"`
+        Market      string `form:"market,optional"`
+    }
+    PageSetProductHistoryReq {
+        PageReq
+        ProductHistoryQuery
+    }
+    ProductHistoryItem {
+        Id            string `json:"id"`
+        ProductCode   string `json:"productCode"`
+        ProductName   string `json:"productName"`
+        ProductType   string `json:"productType"`
+        Market        string `json:"market"`
+        TradeDate     string `json:"tradeDate"`
+        OpenPrice     string `json:"openPrice"`
+        HighPrice     string `json:"highPrice"`
+        LowPrice      string `json:"lowPrice"`
+        ClosePrice    string `json:"closePrice"`
+        ChangeAmount  string `json:"changeAmount"`
+        ChangePercent string `json:"changePercent"`
+        Volume        string `json:"volume"`
+        Turnover      string `json:"turnover"`
+        UpdateTime    string `json:"updateTime"`
+    }
+    PageSetProductHistoryResp {
+        Rows  []*ProductHistoryItem `json:"rows"`
+        Total int64                 `json:"total"`
+    }
+)
+
+@server(
+    tags: "产品管理"
+    group: product/history
+    prefix: /product/history
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetProductHistoryReq) returns (PageSetProductHistoryResp)
+}

@@ -1,0 +1,106 @@
+syntax = "v1"
+
+info(
+    desc: "业务用户报表与流水（对接 fb_users / fb_account_flow_records）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    // 用户报表筛选；对齐 Java FbUserReportServiceImpl.getWrapper
+    MemberReportQuery {
+        Keyword    string `form:"keyword,optional"`    // 用户名/手机号/真实姓名精确匹配
+        Username   string `form:"username,optional"`   // 预留（Java wrapper 已注释）
+        Level      string `form:"level,optional"`      // fb_users.level
+        Status     string `form:"status,optional"`     // fb_users.status
+        Verified   string `form:"verified,optional"`   // fb_users.verified
+        OrderField string `form:"orderField,optional"` // 排序字段：created_at/last_login/level/username
+        Order      string `form:"order,optional"`      // asc/desc
+    }
+    PageSetMemberReportReq {
+        PageReq
+        MemberReportQuery
+    }
+    // 上级用户摘要；来自 fb_users 自关联 parent_id
+    MemberReportParentUser {
+        Id       string `json:"id"`
+        Username string `json:"username"`
+    }
+    // 报表列表行；充值/提现分别汇总 fb_deposits/fb_withdraws，契约见 docs/biz-api.md 1.5
+    MemberReportItem {
+        Id             string                  `json:"id"`
+        UserId         string                  `json:"userId"`
+        Username       string                  `json:"username,optional"`
+        Mobile         string                  `json:"mobile,optional"`
+        RealName       string                  `json:"realName,optional"`
+        Level          int64                   `json:"level,optional"`
+        Amount         float64                 `json:"amount,optional"`         // 钱包余额汇总
+        RechargeAmount float64                 `json:"rechargeAmount,optional"` // 成功充值汇总
+        WithdrawAmount float64                 `json:"withdrawAmount,optional"` // 成功提现汇总
+        RechargeDiff   float64                 `json:"rechargeDiff,optional"`   // 充提差
+        TotalProfit    float64                 `json:"totalProfit,optional"`    // fb_profit_records 累计 SUM(amount)
+        TeamCount      int64                   `json:"teamCount,optional"`      // 直属下级人数 parent_id + flag=0
+        RegisterTime   string                  `json:"registerTime,optional"`
+        LastLogin      string                  `json:"lastLogin,optional"`
+        LoginIp        string                  `json:"loginIp,optional"`        // 最近登录 IP
+        ParentUser     *MemberReportParentUser `json:"parentUser,optional"`
+    }
+    PageSetMemberReportResp {
+        Rows  []*MemberReportItem `json:"rows"`
+        Total int64               `json:"total"`
+    }
+    // 按用户 ID 分页查流水；路径参数 userId 为 fb_users.id
+    MemberReportFlowQuery {
+        Status   string `form:"status,optional"`   // f.status
+        Type     string `form:"type,optional"`     // f.flow_type（Java 参数名 type）
+        Keyword  string `form:"keyword,optional"` // 用户名/手机/姓名/业务单号模糊
+        Username string `form:"username,optional"`
+        Mobile   string `form:"mobile,optional"`
+        RealName string `form:"realName,optional"`
+    }
+    PageSetMemberReportFlowReq {
+        PageReq
+        UserId string `path:"userId"`
+        MemberReportFlowQuery
+    }
+    // 账户流水行；主表 fb_account_flow_records，契约见 docs/biz-api.md 1.5.1
+    MemberReportFlowItem {
+        Id           string  `json:"id"`
+        UserId       string  `json:"userId"`
+        Username     string  `json:"username,optional"`
+        Mobile       string  `json:"mobile,optional"`
+        RealName     string  `json:"realName,optional"`
+        AccountType  string  `json:"accountType,optional"`
+        FlowType     string  `json:"flowType,optional"`     // CONTRACT_BUY 等
+        BeforeAmount float64 `json:"beforeAmount,optional"`
+        FlowAmount   float64 `json:"flowAmount,optional"`
+        AfterAmount  float64 `json:"afterAmount,optional"`
+        BusinessNo   string  `json:"businessNo,optional"`
+        Remark       string  `json:"remark,optional"`
+        CreatedAt    string  `json:"createdAt,optional"`
+        WalletId     string  `json:"walletId,optional"`
+        Currency     string  `json:"currency,optional"`
+        Description  string  `json:"description,optional"`
+        Status       string  `json:"status,optional"`       // SUCCESS 等
+        UpdatedAt    string  `json:"updatedAt,optional"`
+    }
+    PageSetMemberReportFlowResp {
+        Rows  []*MemberReportFlowItem `json:"rows"`
+        Total int64                   `json:"total"`
+    }
+)
+
+@server(
+    tags: "业务用户"
+    group: member/report
+    prefix: /member/report
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetMemberReportReq) returns (PageSetMemberReportResp)
+
+    @handler Flow
+    get /flow/:userId (PageSetMemberReportFlowReq) returns (PageSetMemberReportFlowResp)
+}

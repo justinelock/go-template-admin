@@ -1,0 +1,32 @@
+RestConf:
+  Name: system
+  Port: 8086
+  Log:
+    ServiceName: system-api
+  Prometheus:
+    Port: 4002
+
+FileUpload:
+  Path: ./uploads
+
+# App 安装包落盘：dev 用项目内 www/wwwroot；生产可改为 /www/wwwroot
+AppReleaseUpload:
+  WwwrootBase: ./www/wwwroot
+  SubPath: download
+  UrlScheme: https
+  DefaultDomain: app.fubonplus.com
+  AllowedDomains:
+    - app.fubonplus.com
+    - app.fubang.vip
+
+Tenant:
+  IgnoreTables:
+    - sys_tenant
+    - sys_tenant_package
+    - sys_menu
+    - sys_user_role
+    - sys_user_post
+    - sys_role_menu
+    - sys_role_dept
+    - sys_client
+    - sys_config

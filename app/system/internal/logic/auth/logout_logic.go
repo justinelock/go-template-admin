@@ -1,0 +1,53 @@
+package auth
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"ovra/app/system/internal/svc"
+	"ovra/toolkit/auth"
+	"ovra/toolkit/errx"
+	"strings"
+
+	"github.com/zeromicro/go-zero/core/logx"
+)
+
+// LogoutLogic 登出：解析 JWT 后删除 Redis 中的 session
+type LogoutLogic struct {
+	logx.Logger
+	ctx    context.Context
+	svcCtx *svc.ServiceContext
+	r      *http.Request
+}
+
+func NewLogoutLogic(ctx context.Context, svcCtx *svc.ServiceContext, r *http.Request) *LogoutLogic {
+	return &LogoutLogic{
+		Logger: logx.WithContext(ctx),
+		ctx:    ctx,
+		svcCtx: svcCtx,
+		r:      r,
+	}
+}
+
+func (l *LogoutLogic) Logout() error {
+	authorization := l.r.Header.Get("Authorization")
+	if authorization == "" {
+		return nil
+	}
+	tokenString := strings.TrimPrefix(authorization, "Bearer ")
+	us, err := auth.AnalyseToken(tokenString, l.svcCtx.Config.JwtAuth.AccessSecret)
+	if err != nil {
+		return errx.BizErr("系统异常")
+	}
+	key := ""
+	if l.svcCtx.Config.JwtAuth.MultipleLoginDevices {
+		key = fmt.Sprintf(auth.TokenKeyMd5, us.ClientId, us.UserId, us.UsMd5)
+	} else {
+		key = fmt.Sprintf(auth.TokenKey, us.ClientId, us.UserId)
+	}
+	_, err = l.svcCtx.Rds.DelCtx(l.ctx, key)
+	if err != nil {
+		return err
+	}
+	return nil
+}

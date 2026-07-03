@@ -1,0 +1,72 @@
+syntax = "v1"
+
+info(
+    desc: "提现管理（对接 fb_withdraws）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    // 列表筛选；对齐 Java FbWithdrawsDao.selectPageWithUser
+    FundWithdrawQuery {
+        Keyword  string `form:"keyword,optional"`  // 用户名/手机/姓名/订单号模糊
+        Status   string `form:"status,optional"`   // w.status
+        Type     string `form:"type,optional"`     // w.withdraw_type（Java 参数名 type）
+        Username string `form:"username,optional"` // u.username LIKE
+        Mobile   string `form:"mobile,optional"`   // u.mobile LIKE
+        RealName string `form:"realName,optional"` // u.real_name LIKE
+    }
+    PageSetFundWithdrawReq {
+        PageReq
+        FundWithdrawQuery
+    }
+    // 列表行；契约见 docs/biz-api.md 2.3
+    FundWithdrawItem {
+        Id            string  `json:"id"`
+        UserId        string  `json:"userId"`
+        Username      string  `json:"username,optional"`
+        Mobile        string  `json:"mobile,optional"`
+        RealName      string  `json:"realName,optional"`
+        OrderNo       string  `json:"orderNo,optional"`
+        Amount        float64 `json:"amount,optional"`
+        Status        string  `json:"status,optional"`
+        WithdrawType  string  `json:"withdrawType,optional"`
+        BankName      string  `json:"bankName,optional"`
+        BankCardNo    string  `json:"bankCardNo,optional"`
+        AccountName   string  `json:"accountName,optional"`
+        PaymentStatus string  `json:"paymentStatus,optional"`
+        PaymentNo     string  `json:"paymentNo,optional"`
+        PaymentTime   string  `json:"paymentTime,optional"`
+        Remark        string  `json:"remark,optional"`
+        RejectReason  string  `json:"rejectReason,optional"`
+        CreatedAt     string  `json:"createdAt,optional"`
+        UpdatedAt     string  `json:"updatedAt,optional"`
+    }
+    PageSetFundWithdrawResp {
+        Rows  []*FundWithdrawItem `json:"rows"`
+        Total int64               `json:"total"`
+    }
+    // 拒绝提现；对齐 Java PUT /rejected，remark 为拒绝理由
+    FundWithdrawRejectReq {
+        Id     string `json:"id"`
+        Remark string `json:"remark"`
+    }
+)
+
+@server(
+    tags: "资金管理"
+    group: fund/withdraw
+    prefix: /fund/withdraw
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetFundWithdrawReq) returns (PageSetFundWithdrawResp)
+
+    @handler Approved
+    put /approved/:id (IdReq)
+
+    @handler Rejected
+    put /rejected (FundWithdrawRejectReq)
+}

@@ -1,0 +1,106 @@
+syntax = "v1"
+
+info(
+    desc: "投信产品列表（对接 fb_fund）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    // 列表筛选；对齐 Java FundServiceImpl.getWrapper + name 参数
+    InvestListQuery {
+        Keyword    string `form:"keyword,optional"`    // code/name 模糊
+        Name       string `form:"name,optional"`       // 投信名称 LIKE
+        Code       string `form:"code,optional"`       // 投信代码 LIKE
+        Status     string `form:"status,optional"`     // 0 禁用 / 1 启用
+        SoldOut    string `form:"soldOut,optional"`    // 0 进行中 / 1 已售罄
+        OrderField string `form:"orderField,optional"` // sort/create_time/code/name
+        Order      string `form:"order,optional"`      // asc/desc
+    }
+    PageSetInvestListReq {
+        PageReq
+        InvestListQuery
+    }
+    // 列表/详情行；字段对齐 fb_fund（docs/biz-api.md 4.2）
+    InvestListItem {
+        Id                 string  `json:"id"`
+        Code               string  `json:"code,optional"`
+        Symbol             string  `json:"symbol,optional"`
+        Name               string  `json:"name,optional"`
+        Company            string  `json:"company,optional"`
+        Ev                 string  `json:"ev,optional"`
+        Price              float64 `json:"price,optional"`
+        Currency           string  `json:"currency,optional"`
+        Description        string  `json:"description,optional"`
+        Poster             string  `json:"poster,optional"`
+        Status             int     `json:"status,optional"`
+        SoldOut            int     `json:"soldOut,optional"`
+        RateMin            float64 `json:"rateMin,optional"`
+        RateMax            float64 `json:"rateMax,optional"`
+        Rate               float64 `json:"rate,optional"`
+        MinAmount          float64 `json:"minAmount,optional"`
+        MinAppendAmount    float64 `json:"minAppendAmount,optional"`
+        MaxAmount          float64 `json:"maxAmount,optional"`
+        Period             int     `json:"period,optional"`
+        RateMode           string  `json:"rateMode,optional"`
+        LatestAmountRaised float64 `json:"latestAmountRaised,optional"`
+        LastestFundingDate string  `json:"lastestFundingDate,optional"`
+        Sort               int     `json:"sort,optional"`
+        CreateTime         string  `json:"createTime,optional"`
+        UpdateTime         string  `json:"updateTime,optional"`
+    }
+    PageSetInvestListResp {
+        Rows  []*InvestListItem `json:"rows"`
+        Total int64             `json:"total"`
+    }
+    // 新增/修改请求体；对齐 Java RequestFundDTO
+    InvestListSaveReq {
+        Id                 string  `json:"id,optional"`
+        Code               string  `json:"code"`
+        Symbol             string  `json:"symbol"`
+        Name               string  `json:"name"`
+        Company            string  `json:"company"`
+        Ev                 string  `json:"ev,optional"`
+        Price              float64 `json:"price,optional"`
+        Currency           string  `json:"currency,optional"`
+        Description        string  `json:"description,optional"`
+        Poster             string  `json:"poster,optional"`
+        Status             int     `json:"status,optional"`
+        SoldOut            int     `json:"soldOut,optional"`
+        RateMin            float64 `json:"rateMin,optional"`
+        RateMax            float64 `json:"rateMax,optional"`
+        Rate               float64 `json:"rate"`
+        MinAmount          float64 `json:"minAmount"`
+        MinAppendAmount    float64 `json:"minAppendAmount,optional"`
+        MaxAmount          float64 `json:"maxAmount"`
+        Period             int     `json:"period"`
+        RateMode           string  `json:"rateMode,optional"`
+        LatestAmountRaised float64 `json:"latestAmountRaised,optional"`
+        LastestFundingDate string  `json:"lastestFundingDate,optional"`
+        Sort               int     `json:"sort"`
+    }
+)
+
+@server(
+    tags: "投信管理"
+    group: invest/list
+    prefix: /invest/list
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetInvestListReq) returns (PageSetInvestListResp)
+
+    @handler Info
+    get /:id (IdReq) returns (InvestListItem)
+
+    @handler Add
+    post / (InvestListSaveReq)
+
+    @handler Update
+    put / (InvestListSaveReq)
+
+    @handler Delete
+    delete /:ids (IdsReq)
+}

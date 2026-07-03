@@ -1,0 +1,33 @@
+syntax = "v1"
+
+info(
+    desc: "App 安装包上传（multipart PUT，对齐 Java AppReleaseUploadController）"
+    author: "ovra"
+)
+
+type (
+    AppReleaseUploadOptions {
+        DefaultDomain  string   `json:"defaultDomain,optional"`
+        AllowedDomains []string `json:"allowedDomains,optional"`
+        UrlPattern     string   `json:"urlPattern,optional"`
+        WwwrootBase    string   `json:"wwwrootBase,optional"`
+    }
+    AppReleaseUploadResult {
+        Url      string `json:"url"`
+        Path     string `json:"path,optional"`
+        Domain   string `json:"domain,optional"`
+        FileName string `json:"fileName,optional"`
+        Kind     string `json:"kind,optional"`
+    }
+)
+
+@server(
+    tags: "App管理"
+    group: app/release
+    prefix: /app/release/upload
+    middleware: Auth, Sign
+)
+service System {
+    @handler Options
+    get /options returns (AppReleaseUploadOptions)
+}

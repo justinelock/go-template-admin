@@ -1,0 +1,42 @@
+syntax = "v1"
+
+info(
+    desc: "仪表盘分析页统计（对齐 Java DashboardController.getStatistics）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    // 时间维度：0=当天 1=本周(周一至今) 2=本月(1号至今)；非法或缺省按 1
+    DashboardStatisticsQuery {
+        Type int `form:"type,optional"`
+    }
+    // 分析页四卡数据；字段名与 Java /fubang/dashboard/statistics 一致
+    DashboardStatisticsResp {
+        Type                    int64 `json:"type"`
+        PendingUserCount        int64 `json:"pendingUserCount"`
+        ApprovedUserCount       int64 `json:"approvedUserCount"`
+        VerifiedUserCount       int64 `json:"verifiedUserCount"`
+        RejectedUserCount       int64 `json:"rejectedUserCount"`
+        PendingUserWalletCount  int64 `json:"pendingUserWalletCount"`
+        ApprovedUserWalletCount int64 `json:"approvedUserWalletCount"`
+        RejectedUserWalletCount int64 `json:"rejectedUserWalletCount"`
+        DepositCount            int64 `json:"depositCount"`
+        DepositSum              int64 `json:"depositSum"`
+        WithdrawCount           int64 `json:"withdrawCount"`
+        WithdrawSum             int64 `json:"withdrawSum"`
+    }
+)
+
+@server(
+    tags: "仪表盘"
+    group: dashboard
+    prefix: /dashboard
+    middleware: Auth, Sign
+)
+service System {
+    // 分析页概览统计；对齐 Java GET /fubang/dashboard/statistics
+    @handler Statistics
+    get /statistics (DashboardStatisticsQuery) returns (DashboardStatisticsResp)
+}

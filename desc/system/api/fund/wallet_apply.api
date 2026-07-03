@@ -1,0 +1,174 @@
+syntax = "v1"
+
+info(
+    desc: "钱包申请（对接 fb_account_application）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    // 列表筛选；对齐 Java FbAccountApplicationDao.selectPageWithUser
+    FundWalletApplyQuery {
+        Keyword     string `form:"keyword,optional"`     // 用户名/手机/姓名模糊
+        Status      string `form:"status,optional"`      // a.status：PENDING/APPROVED/REJECTED
+        State       string `form:"state,optional"`        // a.state
+        Verified    string `form:"verified,optional"`    // u.verified
+        UserId      string `form:"userId,optional"`      // a.user_id 精确
+        Username    string `form:"username,optional"`    // u.username LIKE
+        Mobile      string `form:"mobile,optional"`      // u.mobile LIKE
+        RealName    string `form:"realName,optional"`    // u.real_name LIKE
+        AccountType string `form:"accountType,optional"` // a.account_type（Go 扩展）
+    }
+    PageSetFundWalletApplyReq {
+        PageReq
+        FundWalletApplyQuery
+    }
+    // 列表行；对齐 Java FbAccountApplicationVO，契约见 docs/biz-api.md 2.1
+    FundWalletApplyItem {
+        Id                  string `json:"id"`
+        UserId              string `json:"userId"`
+        Username            string `json:"username,optional"`
+        Mobile              string `json:"mobile,optional"`
+        RealName            string `json:"realName,optional"`
+        AccountType         string `json:"accountType,optional"`
+        Status              string `json:"status,optional"`
+        State               string `json:"state,optional"`
+        RiskAssessmentScore int64  `json:"riskAssessmentScore,optional"`
+        RejectReason        string `json:"rejectReason,optional"`
+        ApplyTime           string `json:"applyTime,optional"`
+        AuditTime           string `json:"auditTime,optional"`
+        AuditUserId         string `json:"auditUserId,optional"`
+        AuditUser           string `json:"auditUser,optional"`
+        Remark              string `json:"remark,optional"`
+        CreatedAt           string `json:"createdAt,optional"`
+        UpdatedAt           string `json:"updatedAt,optional"`
+    }
+    PageSetFundWalletApplyResp {
+        Rows  []*FundWalletApplyItem `json:"rows"`
+        Total int64                  `json:"total"`
+    }
+    // 详情弹窗；对齐 Java FbAccountApplicationDetailVO，契约见 docs/biz-api.md 2.1.1
+    FundWalletApplyBasicInfo {
+        Id                  string `json:"id"`
+        Username            string `json:"username,optional"`
+        AccountType         string `json:"accountType,optional"`
+        RiskAssessmentScore int64  `json:"riskAssessmentScore,optional"`
+        Status              string `json:"status,optional"`
+        ApplyTime           string `json:"applyTime,optional"`
+        AuditTime           string `json:"auditTime,optional"`
+        RejectReason        string `json:"rejectReason,optional"`
+        Remark              string `json:"remark,optional"`
+    }
+    FundWalletApplySecurityInfo {
+        TwoFactorEnabled  bool  `json:"twoFactorEnabled"`
+        SecurityScore     int64 `json:"securityScore"`
+        IdentityVerified  bool  `json:"identityVerified"`
+    }
+    FundWalletApplyLoginStats {
+        CommonLoginIp   string `json:"commonLoginIp,optional"`
+        LastLoginTime   string `json:"lastLoginTime,optional"`
+        CommonLoginArea string `json:"commonLoginArea,optional"`
+        MonthLoginCount int64  `json:"monthLoginCount,optional"`
+    }
+    FundWalletApplyFlowStats {
+        TradeSuccessRate string            `json:"tradeSuccessRate,optional"`
+        MonthFlowCount   int64             `json:"monthFlowCount,optional"`
+        DailyAvgAmount   float64           `json:"dailyAvgAmount,optional"`
+        MonthIncome      float64           `json:"monthIncome,optional"`
+        MonthExpense     float64           `json:"monthExpense,optional"`
+        TypeStatsMap     map[string]int64  `json:"typeStatsMap,optional"`
+    }
+    FundWalletApplyDetailResp {
+        Id           string                      `json:"id,optional"`
+        UserId       string                      `json:"userId,optional"`
+        BasicInfo    *FundWalletApplyBasicInfo   `json:"basicInfo,optional"`
+        SecurityInfo *FundWalletApplySecurityInfo `json:"securityInfo,optional"`
+        LoginStats   *FundWalletApplyLoginStats  `json:"loginStats,optional"`
+        FlowStats    *FundWalletApplyFlowStats   `json:"flowStats,optional"`
+    }
+    // 当月流水全量；对齐 Java getCurrentMonthList，契约见 docs/biz-api.md 2.1.2
+    FundWalletApplyCurrentMonthFlowReq {
+        UserId string `form:"userId"`
+    }
+    FundWalletApplyFlowItem {
+        Id           string  `json:"id"`
+        UserId       string  `json:"userId"`
+        AccountType  string  `json:"accountType,optional"`
+        FlowType     string  `json:"flowType,optional"`
+        BeforeAmount float64 `json:"beforeAmount,optional"`
+        FlowAmount   float64 `json:"flowAmount,optional"`
+        AfterAmount  float64 `json:"afterAmount,optional"`
+        BusinessNo   string  `json:"businessNo,optional"`
+        Remark       string  `json:"remark,optional"`
+        CreatedAt    string  `json:"createdAt,optional"`
+        WalletId     string  `json:"walletId,optional"`
+        Currency     string  `json:"currency,optional"`
+        Description  string  `json:"description,optional"`
+        Status       string  `json:"status,optional"`
+        UpdatedAt    string  `json:"updatedAt,optional"`
+    }
+    FundWalletApplyCurrentMonthFlowResp {
+        Rows  []*FundWalletApplyFlowItem `json:"rows"`
+        Total int64                      `json:"total"`
+    }
+    // 登录记录筛选；对齐 Java FbDeviceLoginLogDao.selectPageWithUser
+    FundWalletApplyLoginLogQuery {
+        Status   string `form:"status,optional"`   // d.login_result
+        Keyword  string `form:"keyword,optional"`  // 用户名/手机/姓名/IP 模糊
+        Username string `form:"username,optional"` // u.username LIKE
+        RealName string `form:"realName,optional"` // u.real_name LIKE
+    }
+    // 登录记录；对齐 fb_device_login_log，契约见 docs/biz-api.md 2.1.3
+    PageSetFundWalletApplyLoginLogReq {
+        PageReq
+        UserId string `path:"userId"`
+        FundWalletApplyLoginLogQuery
+    }
+    FundWalletApplyLoginLogItem {
+        Id            string `json:"id"`
+        UserId        string `json:"userId"`
+        Username      string `json:"username,optional"`
+        LoginTime     string `json:"loginTime,optional"`
+        LoginIp       string `json:"loginIp,optional"`
+        LoginLocation string `json:"loginLocation,optional"`
+        LoginType     string `json:"loginType,optional"`
+        LoginResult   string `json:"loginResult,optional"`
+        FailReason    string `json:"failReason,optional"`
+        RiskLevel     string `json:"riskLevel,optional"`
+        RiskDetail    string `json:"riskDetail,optional"`
+    }
+    PageSetFundWalletApplyLoginLogResp {
+        Rows  []*FundWalletApplyLoginLogItem `json:"rows"`
+        Total int64                          `json:"total"`
+    }
+    // 钱包申请审核；对齐 Java PUT /verify，state=APPROVED|REJECTED，remark 必填且至少 5 字
+    FundWalletApplyVerifyReq {
+        Id     string `json:"id"`
+        State  string `json:"state"`
+        Remark string `json:"remark"`
+    }
+)
+
+@server(
+    tags: "资金管理"
+    group: fund/walletApply
+    prefix: /fund/walletApply
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetFundWalletApplyReq) returns (PageSetFundWalletApplyResp)
+
+    @handler Detail
+    get /detail/:id (IdReq) returns (FundWalletApplyDetailResp)
+
+    @handler CurrentMonthFlow
+    get /flow/currentMonth (FundWalletApplyCurrentMonthFlowReq) returns (FundWalletApplyCurrentMonthFlowResp)
+
+    @handler LoginLog
+    get /loginLog/:userId (PageSetFundWalletApplyLoginLogReq) returns (PageSetFundWalletApplyLoginLogResp)
+
+    @handler Verify
+    put /verify (FundWalletApplyVerifyReq)
+}

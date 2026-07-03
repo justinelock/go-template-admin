@@ -1,0 +1,48 @@
+syntax = "v1"
+
+info(
+    desc: "K线数据列表（占位接口，待接业务表）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    KlineMainQuery {
+        Keyword     string `form:"keyword,optional"`
+        ProductCode string `form:"productCode,optional"`
+        Symbol      string `form:"symbol,optional"`
+    }
+    PageSetKlineMainReq {
+        PageReq
+        KlineMainQuery
+    }
+    KlineMainItem {
+        Id          string `json:"id"`
+        ProductCode string `json:"productCode"`
+        Symbol      string `json:"symbol"`
+        RedisKey    string `json:"redisKey"`
+        BarCount    string `json:"barCount"`
+        LatestTime  string `json:"latestTime"`
+        Open        string `json:"open"`
+        High        string `json:"high"`
+        Low         string `json:"low"`
+        Close       string `json:"close"`
+        Volume      string `json:"volume"`
+    }
+    PageSetKlineMainResp {
+        Rows  []*KlineMainItem `json:"rows"`
+        Total int64            `json:"total"`
+    }
+)
+
+@server(
+    tags: "K线管理"
+    group: kline/kline
+    prefix: /kline/main
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetKlineMainReq) returns (PageSetKlineMainResp)
+}

@@ -1,0 +1,74 @@
+syntax = "v1"
+
+info(
+    desc: "业务用户钱包列表（对接 fb_user_wallets）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    // 钱包筛选；对齐 Java FbUserWalletsDao.selectPageWithUser
+    MemberWalletQuery {
+        Keyword     string `form:"keyword,optional"`     // 用户名/手机号/真实姓名模糊
+        UserId      string `form:"userId,optional"`      // w.user_id 精确
+        AccountType string `form:"accountType,optional"` // 对应 Java type → w.account_type
+        Status      string `form:"status,optional"`      // u.status
+        Verified    string `form:"verified,optional"`    // u.verified
+        Username    string `form:"username,optional"`    // u.username LIKE
+        Mobile      string `form:"mobile,optional"`      // u.mobile LIKE
+        RealName    string `form:"realName,optional"`    // u.real_name LIKE
+        Currency    string `form:"currency,optional"`    // 扩展：w.currency
+        FrozenStatus string `form:"frozenStatus,optional"` // 扩展：w.frozen
+    }
+    PageSetMemberWalletReq {
+        PageReq
+        MemberWalletQuery
+    }
+    // 钱包列表行；用户信息来自 JOIN fb_users，契约见 docs/biz-api.md 1.4
+    MemberWalletItem {
+        Id           string  `json:"id"`
+        UserId       string  `json:"userId"`
+        Username     string  `json:"username,optional"`
+        Mobile       string  `json:"mobile,optional"`
+        RealName     string  `json:"realName,optional"`
+        AccountType  string  `json:"accountType,optional"`
+        Balance      float64 `json:"balance,optional"`
+        FrozenAmount float64 `json:"frozenAmount,optional"`
+        Frozen       bool    `json:"frozen,optional"`
+        Version      string  `json:"version,optional"`     // 乐观锁版本
+        Currency     string  `json:"currency,optional"`
+        DrawTicket   int64   `json:"drawTicket,optional"`  // 抽奖券数量
+        CreatedAt    string  `json:"createdAt,optional"`
+        UpdatedAt    string  `json:"updatedAt,optional"`
+    }
+    PageSetMemberWalletResp {
+        Rows  []*MemberWalletItem `json:"rows"`
+        Total int64               `json:"total"`
+    }
+    // 管理端加减款；对齐 Java FbAddSubtractRequest + PUT /fubang/fbuserwallets/addOrSubtract
+    MemberWalletAddOrSubtractReq {
+        Id       string  `json:"id"`                  // 钱包 id（fb_user_wallets.id）
+        Type     bool    `json:"type"`                // true=加款，false=减款
+        Amount   float64 `json:"amount"`              // 金额（正数，服务端取绝对值）
+        Remark   string  `json:"remark,optional"`     // 备注；空则默认「后台调整加/减款」
+        FlowType string  `json:"flowType,optional"`   // ADD_AMOUNT/ADD_BONUS/ADD_DIVIDEND/ADD_TRANSFER 或 SUBTRACT_AMOUNT/ADD_TRANSFER
+    }
+)
+
+@server(
+    tags: "业务用户"
+    group: member/wallet
+    prefix: /member/wallet
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetMemberWalletReq) returns (PageSetMemberWalletResp)
+
+    @handler AddOrSubtract
+    put /addOrSubtract (MemberWalletAddOrSubtractReq)
+
+    @handler Delete
+    delete /:ids (IdsReq)
+}

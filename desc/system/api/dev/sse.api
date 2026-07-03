@@ -1,0 +1,41 @@
+syntax = "v1"
+
+info(
+    desc: "SSE 演示接口（开发参考菜单）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    SseUserInfo {
+        UserId   string `json:"userId"`
+        UserName string `json:"username"`
+        NickName string `json:"nickName"`
+        DeptName string `json:"deptName"`
+    }
+    SseSendReq {
+        UserId  string `path:"id,optional"`
+        Message string `form:"message"`
+    }
+)
+
+@server(
+    tags: "SSE演示"
+    group: dev/sse
+    prefix: /system/sse
+    middleware: Auth, Sign
+)
+service System {
+    @handler Status
+    get /status returns (bool)
+
+    @handler List
+    get /list returns ([]SseUserInfo)
+
+    @handler SendAll
+    post /sendAll (SseSendReq)
+
+    @handler Send
+    post /send/:id (SseSendReq)
+}

@@ -1,0 +1,47 @@
+http:
+  routers:
+    # system：含 /auth 登录与总控业务 API
+    router-system:
+      rule: "(PathPrefix(`/auth`) || PathPrefix(`/system`) || PathPrefix(`/monitor`) || PathPrefix(`/resource`) || PathPrefix(`/member`) || PathPrefix(`/fund`) || PathPrefix(`/trade`) || PathPrefix(`/invest`) || PathPrefix(`/product`) || PathPrefix(`/notify`) || PathPrefix(`/kline`) || PathPrefix(`/app`) || PathPrefix(`/dashboard`))"
+      entryPoints:
+        - websecure
+      service: service-system
+      middlewares:
+        - cors-header
+
+    # demo
+    router-demo:
+      rule: "PathPrefix(`/demo`)"
+      entryPoints:
+        - websecure
+      service: service-demo
+      middlewares:
+        - cors-header
+
+
+  services:
+    service-system:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:8086"
+
+    service-demo:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:8099"
+
+  middlewares:
+    cors-header:
+      headers:
+        accessControlAllowOriginList:
+          - "*"
+        accessControlAllowMethods:
+          - "GET"
+          - "POST"
+          - "PUT"
+          - "DELETE"
+          - "OPTIONS"
+        accessControlAllowHeaders:
+          - "*"
+        accessControlAllowCredentials: true
+        addVaryHeader: true

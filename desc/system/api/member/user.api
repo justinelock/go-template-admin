@@ -1,0 +1,160 @@
+syntax = "v1"
+
+info(
+    desc: "业务用户列表与活跃统计（对接 fb_users 等表）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    // 用户列表筛选；keyword 匹配 username/mobile/id，authStatus 对应 fb_users.verification_status，deleted 对应 flag
+    MemberUserQuery {
+        Keyword    string `form:"keyword,optional"`    // 用户名/手机号/用户ID
+        AuthStatus string `form:"authStatus,optional"` // 认证状态 verification_status
+        Deleted    string `form:"deleted,optional"`    // 0 正常 / 1 已删（fb_users.flag）
+    }
+    // 分页列表请求；时间范围见 PageReq.params[beginTime/endTime]
+    PageSetMemberUserReq {
+        PageReq
+        MemberUserQuery
+    }
+    // 列表行；totalBalance=USD 钱包汇总；投信分红来自 fb_fund_profit_log；onlineStatus 由 Redis 计算
+    MemberUserItem {
+        Id                   string  `json:"id"`
+        Username             string  `json:"username"`
+        RealName             string  `json:"realName,optional"`
+        IdCard               string  `json:"idCard,optional"`
+        AgentLevel           int64   `json:"agentLevel,optional"`           // fb_users.agent_level
+        InviteCode           string  `json:"inviteCode,optional"`
+        CommissionRate       float64 `json:"commissionRate,optional"`
+        TotalCommission      float64 `json:"totalCommission,optional"`
+        TotalBalance         float64 `json:"totalBalance,optional"`         // SUM(USD wallet balance>0)
+        FundPositionAmount   float64 `json:"fundPositionAmount,optional"`   // PENDING 投信本金
+        FundPositionDividend float64 `json:"fundPositionDividend,optional"` // fb_fund_profit_log.status=1
+        Status               string  `json:"status,optional"`               // ACTIVE 等
+        OnlineStatus         int64   `json:"onlineStatus,optional"`         // Redis online:user 或 presence 5 分钟
+        LastLogin            string  `json:"lastLogin,optional"`
+        CreatedAt            string  `json:"createdAt,optional"`            // 注册时间
+    }
+    PageSetMemberUserResp {
+        Rows  []*MemberUserItem `json:"rows"`
+        Total int64             `json:"total"`
+    }
+    // 活跃统计（data 内）；Redis 全局统计，与列表筛选无关
+    MemberUserStatsResp {
+        TotalOnlineUsers    int64 `json:"totalOnlineUsers"`    // KEYS online:user:*
+        TodayLogins         int64 `json:"todayLogins"`         // SCARD login:today
+        TotalActiveSessions int64 `json:"totalActiveSessions"` // ZSET fb:presence:active 近 5 分钟
+    }
+    // 重置登录/交易密码；password 明文入参，服务端 MD5 入库
+    MemberUserResetPwdReq {
+        Id       string `json:"id"`                 // fb_users.id
+        Password string `json:"password"`           // 新密码；空则默认 123456
+        Type     int64  `json:"type,optional"`     // 1=登录密码 2=交易密码，默认 1
+    }
+    // 用户详情（GET /:id 专用）；不含 password/pay_password 哈希
+    MemberUserParentBrief {
+        Id       string `json:"id"`
+        Username string `json:"username,optional"`
+        RealName string `json:"realName,optional"`
+    }
+    MemberUserInfoResp {
+        Id                     string               `json:"id"`
+        Username               string               `json:"username"`
+        Email                  string               `json:"email,optional"`
+        Mobile                 string               `json:"mobile,optional"`
+        Phone                  string               `json:"phone,optional"`
+        RealName               string               `json:"realName,optional"`
+        IdCard                 string               `json:"idCard,optional"`
+        VerificationStatus     string               `json:"verificationStatus,optional"`
+        Verified               bool                 `json:"verified,optional"`
+        CreditScore            int64                `json:"creditScore,optional"`
+        SecurityQuestion       string               `json:"securityQuestion,optional"`
+        SecurityAnswer         string               `json:"securityAnswer,optional"`
+        Role                   string               `json:"role,optional"`
+        AccountLocked          bool                 `json:"accountLocked,optional"`
+        FailedAttempts         int64                `json:"failedAttempts,optional"`
+        LastLogin              string               `json:"lastLogin,optional"`
+        ParentId               string               `json:"parentId,optional"`
+        Parent                 *MemberUserParentBrief `json:"parent,optional"`
+        Level                  int64                `json:"level,optional"`
+        AgentLevel             int64                `json:"agentLevel,optional"`
+        InviteCode             string               `json:"inviteCode,optional"`
+        CommissionRate         float64              `json:"commissionRate,optional"`
+        TotalCommission        float64              `json:"totalCommission,optional"`
+        TeamSize               int64                `json:"teamSize,optional"`
+        Status                 string               `json:"status,optional"`
+        ContractControl        int64                `json:"contractControl,optional"`
+        IsOnline               string               `json:"isOnline,optional"`
+        Remark                 string               `json:"remark,optional"`
+        Flag                   int64                `json:"flag,optional"`
+        IsTest                 bool                 `json:"isTest,optional"`
+        HasPassword            bool                 `json:"hasPassword,optional"`
+        HasPayPassword         bool                 `json:"hasPayPassword,optional"`
+        PayPasswordUpdatedAt   string               `json:"payPasswordUpdatedAt,optional"`
+        PayPasswordErrorCount  int64                `json:"payPasswordErrorCount,optional"`
+        PayPasswordLockedUntil string               `json:"payPasswordLockedUntil,optional"`
+        Avatar                 string               `json:"avatar,optional"`
+        TotalBalance           float64              `json:"totalBalance,optional"`
+        FundPositionAmount     float64              `json:"fundPositionAmount,optional"`
+        FundPositionDividend   float64              `json:"fundPositionDividend,optional"`
+        OnlineStatus           int64                `json:"onlineStatus,optional"`
+        CreatedAt              string               `json:"createdAt,optional"`
+        UpdatedAt              string               `json:"updatedAt,optional"`
+    }
+    // 编辑保存；password/payPassword 非空时 MD5 更新
+    MemberUserUpdateReq {
+        Id                 string  `json:"id"`
+        Username           string  `json:"username,optional"`
+        Password           string  `json:"password,optional"`
+        PayPassword        string  `json:"payPassword,optional"`
+        RealName           string  `json:"realName,optional"`
+        Mobile             string  `json:"mobile,optional"`
+        Email              string  `json:"email,optional"`
+        IdCard             string  `json:"idCard,optional"`
+        SecurityQuestion   string  `json:"securityQuestion,optional"`
+        SecurityAnswer     string  `json:"securityAnswer,optional"`
+        ParentId           string  `json:"parentId,optional"`
+        InviteCode         string  `json:"inviteCode,optional"`
+        CommissionRate     float64 `json:"commissionRate,optional"`
+        TotalCommission    float64 `json:"totalCommission,optional"`
+        CreditScore        int64   `json:"creditScore,optional"`
+        VerificationStatus string  `json:"verificationStatus,optional"`
+        AccountLocked      bool    `json:"accountLocked,optional"`
+        Status             string  `json:"status,optional"`
+        Verified           bool    `json:"verified,optional"`
+        ContractControl    int64   `json:"contractControl,optional"`
+        Remark             string  `json:"remark,optional"`
+        Avatar             string  `json:"avatar,optional"`
+    }
+)
+
+@server(
+    tags: "业务用户"
+    group: member/user
+    prefix: /member/user
+    middleware: Auth, Sign
+)
+service System {
+    @handler Stats
+    get /stats (MemberUserQuery) returns (MemberUserStatsResp)
+
+    @handler PageSet
+    get /list (PageSetMemberUserReq) returns (PageSetMemberUserResp)
+
+    @handler Info
+    get /:id (IdReq) returns (MemberUserInfoResp)
+
+    @handler Update
+    put / (MemberUserUpdateReq)
+
+    @handler Delete
+    delete /:ids (IdsReq)
+
+    @handler Restore
+    put /restore/:ids (IdsReq)
+
+    @handler ResetPwd
+    put /resetPwd (MemberUserResetPwdReq)
+}

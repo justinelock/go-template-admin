@@ -1,0 +1,55 @@
+syntax = "v1"
+
+info(
+    desc: "委托订单列表（占位接口，待接业务表）"
+    author: "ovra"
+)
+
+import "../base.api"
+
+type (
+    TradeEntrustQuery {
+        Keyword     string `form:"keyword,optional"`
+        OrderStatus string `form:"orderStatus,optional"`
+        MarketCode  string `form:"marketCode,optional"`
+    }
+    PageSetTradeEntrustReq {
+        PageReq
+        TradeEntrustQuery
+    }
+    TradeEntrustItem {
+        Id              string `json:"id"`
+        OrderNo         string `json:"orderNo"`
+        UserName        string `json:"username"`
+        MarketCode      string `json:"marketCode"`
+        StockCode       string `json:"stockCode"`
+        OrderType       string `json:"orderType"`
+        EntrustPrice    string `json:"entrustPrice"`
+        EntrustQty      string `json:"entrustQty"`
+        DealQty         string `json:"dealQty"`
+        OrderStatus     string `json:"orderStatus"`
+        StopLossPrice   string `json:"stopLossPrice"`
+        PriceType       string `json:"priceType"`
+        PriceFloatRange string `json:"priceFloatRange"`
+        Validity        string `json:"validity"`
+        Fee             string `json:"fee"`
+        Direction       string `json:"direction"`
+        LimitPrice      string `json:"limitPrice"`
+        EntrustTime     string `json:"entrustTime"`
+    }
+    PageSetTradeEntrustResp {
+        Rows  []*TradeEntrustItem `json:"rows"`
+        Total int64              `json:"total"`
+    }
+)
+
+@server(
+    tags: "订单管理"
+    group: trade/entrust
+    prefix: /trade/entrust
+    middleware: Auth, Sign
+)
+service System {
+    @handler PageSet
+    get /list (PageSetTradeEntrustReq) returns (PageSetTradeEntrustResp)
+}
