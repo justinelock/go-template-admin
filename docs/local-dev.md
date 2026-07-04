@@ -48,6 +48,8 @@ etc/{ENV}/demo.yaml
 
 Traefik 网关（前端 `/api` 代理目标）：`http://127.0.0.1:28080`
 
+> 第一次接触项目？建议先读 [newbie-guide.md](./newbie-guide.md) 了解完整链路与心智模型。
+
 ## 一、初始化项目
 
 ```sh

@@ -12,6 +12,7 @@
 - **租户**：`sys_tenant.contact_user_name` 列重命名为 `contact_username`；租户接口请求/响应 JSON 统一为 `contactUsername`（`base.api`、`tenant.api`）
 
 ### 新增
+- **新手指引**：[`docs/newbie-guide.md`](docs/newbie-guide.md) 从前端点击到 MySQL/Redis 的完整链路、登录流程、改接口步骤与第一天学习路径
 - **实名认证审核**：`PUT /member/kyc/verify` 通过/拒绝待审记录并同步 `fb_users`；前端审核弹窗（证件照+拒绝原因），全量页保留详情、分析页快捷列表仅「审核」（`kyc.api`、`fb_member.go`、`kyc-audit-modal.vue`、`shortcut-kyc-table.vue`）
 - **钱包申请审核**：`PUT /fund/walletApply/verify` 通过时按账户类型开通默认币种钱包；前端审核弹窗（通过/拒绝+审核意见），全量页保留详情/流水/登录、分析页快捷列表仅「审核」（`wallet_apply.api`、`fb_wallet_apply.go`、`wallet-apply-audit-modal.vue`、`shortcut-wallet-table.vue`）
 - **分析页快捷列表**：四卡下方纵向堆叠实名认证/钱包申请/充值/提现精简表格，时间维度与顶部今日/本周/本月联动，操作复用各业务页（`dashboard/analytics/analytics-shortcut-lists.vue`、`shortcut-*-table.vue`）

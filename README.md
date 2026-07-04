@@ -21,6 +21,13 @@ Ovra-Zero 是一个基于 [Go-Zero](https://go-zero.dev/) 重写的若依风格�
 
 - [ovra](https://github.com/ovra-cloud/ovra.git)
 
+## 文档
+
+- **[新手指引：完整链路](./docs/newbie-guide.md)**（推荐首次阅读）
+- [本地开发：配置与启动](./docs/local-dev.md)
+- [接口代码跟读指南](./docs/read-api-flow.md)
+- [业务 API 接口文档](./docs/biz-api.md)
+
 ## 在线体验
 
 账号密码：

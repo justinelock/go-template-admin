@@ -2,7 +2,7 @@
 
 本文说明如何在 Ovra-Zero 仓库中**从 HTTP 请求一路跟到数据库/Redis**。当前总控为 **system 单体**：登录 `/auth/*` 与业务 `/member/*` 等同属 `app/system`，本地默认 `http://127.0.0.1:8086`。
 
-> 本地启动、端口、前后端代理见 [local-dev.md](./local-dev.md)。接口字段与 JSON 示例见 [biz-api.md](./biz-api.md)。
+> 首次阅读建议先看 [newbie-guide.md](./newbie-guide.md)（架构与全链路总览）。本地启动见 [local-dev.md](./local-dev.md)，字段见 [biz-api.md](./biz-api.md)。
 
 ---
 
@@ -269,6 +269,7 @@ curl -s 'http://127.0.0.1:8086/member/user/stats' \
 
 ## 相关文档
 
+- [新手指引：完整链路](./newbie-guide.md)
 - [本地开发：配置与启动](./local-dev.md)
 - [业务 API 接口文档](./biz-api.md)
 - [代码注释与 CHANGELOG 规范](../.cursor/rules/code-comments-changelog.mdc)
